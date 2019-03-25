@@ -34,7 +34,7 @@ func (h *Handler) Login() echo.HandlerFunc {
 		claims["admin"] = false
 		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
-		t, err := token.SignedString([]byte("wkGRdkcF2taUE"))
+		t, err := token.SignedString([]byte(Key))
 		if err != nil {
 			return err
 		}

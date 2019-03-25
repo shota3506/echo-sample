@@ -15,7 +15,7 @@ type UserParam struct {
 	Password string
 }
 
-func (h *Handler) GetUsers() echo.HandlerFunc {
+func (h *Handler) GetUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userId := c.Param("id")
 		user := model.User{}
@@ -49,10 +49,8 @@ func (h *Handler) SaveUser() echo.HandlerFunc {
 		claims["admin"] = false
 		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 
-		// Create token with claims
-
 		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte("wkGRdkcF2taUE"))
+		t, err := token.SignedString([]byte(Key))
 		if err != nil {
 			return err
 		}

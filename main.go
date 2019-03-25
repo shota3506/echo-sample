@@ -15,6 +15,16 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
+		SigningKey: []byte(handler.Key),
+		Skipper: func(c echo.Context) bool {
+			// Skip authentication for and signup login requests
+			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
+				return true
+			}
+			return false
+		},
+	}))
 
 	db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
 	if err != nil {
@@ -25,11 +35,8 @@ func main() {
 
 	h := &handler.Handler{DB: db}
 
-	r := e.Group("")
-	r.Use(middleware.JWT([]byte("wkGRdkcF2taUE")))
-
 	e.GET("/", h.Home())
-	r.GET("/users/:id", h.GetUsers())
+	e.GET("/users/:id", h.GetUser())
 	e.POST("/users", h.SaveUser())
 	e.POST("/login", h.Login())
 

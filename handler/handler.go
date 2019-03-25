@@ -7,3 +7,7 @@ type (
 		DB *gorm.DB
 	}
 )
+
+const (
+	Key = "wkGRdkcF2taUE"
+)
