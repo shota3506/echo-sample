@@ -1,13 +1,13 @@
 package main
 
 import (
-	"./handler"
-	"./model"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"os"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"os"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"./handler"
+	"./model"
 )
 
 func main() {
@@ -23,13 +23,15 @@ func main() {
 	defer db.Close()
 	db.AutoMigrate(&model.User{})
 
+	h := &handler.Handler{DB: db}
+
 	r := e.Group("")
 	r.Use(middleware.JWT([]byte("wkGRdkcF2taUE")))
 
-	e.GET("/", handler.Home())
-	r.GET("/users/:id", handler.GetUsers())
-	e.POST("/users", handler.SaveUser())
-	e.POST("/login", handler.Login())
+	e.GET("/", h.Home())
+	r.GET("/users/:id", h.GetUsers())
+	e.POST("/users", h.SaveUser())
+	e.POST("/login", h.Login())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

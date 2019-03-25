@@ -1,13 +1,11 @@
 package handler
 
 import (
-	"net/http"
-	"os"
-	"time"
-	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
-	"github.com/labstack/echo"
 	"../model"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
+	"net/http"
+	"time"
 )
 
 type LoginParam struct {
@@ -15,23 +13,17 @@ type LoginParam struct {
 	Password string
 }
 
-func Login() echo.HandlerFunc {
+func (h *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
-		if err != nil {
-			panic("データベースへの接続に失敗しました")
-		}
-		defer db.Close()
-
 		param := new(LoginParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
 		user := model.User{}
-		result := db.First(&user, "name=? and password=?", param.Name, param.Password)
+		result := h.DB.First(&user, "name=? and password=?", param.Name, param.Password)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Fount",
+				"status": "Not Found",
 			})
 		}
 
