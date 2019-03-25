@@ -1,12 +1,13 @@
 package handler
 
 import (
+	"net/http"
+	"os"
+	"time"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo"
-	"github.com/shota3506/echo_sample/models"
-	"net/http"
-	"time"
+	"../model"
 )
 
 type LoginParam struct {
@@ -16,7 +17,7 @@ type LoginParam struct {
 
 func Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		db, err := gorm.Open("mysql", "root:@/echo_sample?parseTime=true")
+		db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
 		if err != nil {
 			panic("データベースへの接続に失敗しました")
 		}

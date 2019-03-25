@@ -2,12 +2,13 @@ package handler
 
 import (
 	"net/http"
+	"os"
 	"time"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"../models"
+	"../model"
 )
 
 type UserParam struct {
@@ -17,7 +18,7 @@ type UserParam struct {
 
 func GetUsers() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		db, err := gorm.Open("mysql", "root:@/echo_sample?parseTime=true")
+		db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
 		if err != nil {
 			panic("データベースへの接続に失敗しました")
 		}
@@ -39,7 +40,7 @@ func GetUsers() echo.HandlerFunc {
 
 func SaveUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		db, err := gorm.Open("mysql", "root:@/echo_sample?parseTime=true")
+		db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
 		if err != nil {
 			panic("データベースへの接続に失敗しました")
 		}

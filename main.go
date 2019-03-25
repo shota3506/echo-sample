@@ -1,12 +1,13 @@
 package main
 
 import (
-	"./handlers"
-	"./models"
+	"./handler"
+	"./model"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"os"
 )
 
 func main() {
@@ -15,7 +16,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	db, err := gorm.Open("mysql", "root:@/echo_sample?parseTime=true")
+	db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
 	if err != nil {
 		panic("データベースへの接続に失敗しました")
 	}
