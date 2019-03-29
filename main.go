@@ -33,6 +33,7 @@ func main() {
 	}
 	defer db.Close()
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.WorkSpace{})
 
 	h := &handler.Handler{DB: db}
 
@@ -40,6 +41,9 @@ func main() {
 	e.GET("/users/:id", h.GetUser())
 	e.POST("/users", h.SaveUser())
 	e.POST("/login", h.Login())
+
+	e.GET("/work_spaces/:id", h.GetWorkSpace())
+	e.POST("/work_spaces", h.SaveWorkSpace())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
