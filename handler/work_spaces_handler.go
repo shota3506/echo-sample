@@ -29,7 +29,7 @@ func (h *Handler) GetWorkSpace() echo.HandlerFunc {
 	}
 }
 
-func (h *Handler) SaveWorkSpace() echo.HandlerFunc {
+func (h *Handler) CreateWorkSpace() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		param := new(WorkSpaceParam)
 		if err := c.Bind(param); err != nil {
@@ -41,9 +41,9 @@ func (h *Handler) SaveWorkSpace() echo.HandlerFunc {
 		}
 		h.DB.Create(&workSpace)
 
-		userName := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["name"].(string)
+		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
 		user := model.User{}
-		h.DB.First(&user, "name=?", userName)
+		h.DB.First(&user, "email=?", userEmail)
 		h.DB.Model(&workSpace).Association("Users").Append(&user)
 		return c.JSON(http.StatusOK, echo.Map{
 			"Name": workSpace.Name,

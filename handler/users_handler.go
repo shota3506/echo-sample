@@ -1,17 +1,14 @@
 package handler
 
 import (
-	"net/http"
-	"time"
-	"github.com/labstack/echo"
-	"github.com/dgrijalva/jwt-go"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"../model"
-
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/labstack/echo"
+	"net/http"
 )
 
 type userParam struct {
-	Name string
+	Email string
 	Password string
 }
 
@@ -33,27 +30,19 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 	}
 }
 
-func (h *Handler) SaveUser() echo.HandlerFunc {
+func (h *Handler) CreateUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		param := new(userParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
 		user := model.User{
-			Name: param.Name,
+			Email: param.Email,
 			Password: param.Password,
 		}
 		h.DB.Create(&user)
 
-		token := jwt.New(jwt.SigningMethodHS256)
-
-		claims := token.Claims.(jwt.MapClaims)
-		claims["name"] = user.Name
-		claims["admin"] = false
-		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-		// Generate encoded token and send it as response.
-		t, err := token.SignedString([]byte(Key))
+		t, err := user.IssueToken()
 		if err != nil {
 			return err
 		}

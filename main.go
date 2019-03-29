@@ -16,7 +16,7 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey: []byte(handler.Key),
+		SigningKey: []byte(model.JWTTokenKey),
 		Skipper: func(c echo.Context) bool {
 			// Skip authentication for and signup login requests
 			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
@@ -39,11 +39,11 @@ func main() {
 
 	e.GET("/", h.Home())
 	e.GET("/users/:id", h.GetUser())
-	e.POST("/users", h.SaveUser())
+	e.POST("/users", h.CreateUser())
 	e.POST("/login", h.Login())
 
 	e.GET("/work_spaces/:id", h.GetWorkSpace())
-	e.POST("/work_spaces", h.SaveWorkSpace())
+	e.POST("/work_spaces", h.CreateWorkSpace())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

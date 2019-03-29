@@ -2,14 +2,12 @@ package handler
 
 import (
 	"../model"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"net/http"
-	"time"
 )
 
 type LoginParam struct {
-	Name string
+	Email string
 	Password string
 }
 
@@ -20,21 +18,14 @@ func (h *Handler) Login() echo.HandlerFunc {
 			return err
 		}
 		user := model.User{}
-		result := h.DB.First(&user, "name=? and password=?", param.Name, param.Password)
+		result := h.DB.First(&user, "email=? and password=?", param.Email, param.Password)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"status": "Not Found",
 			})
 		}
 
-		token := jwt.New(jwt.SigningMethodHS256)
-
-		claims := token.Claims.(jwt.MapClaims)
-		claims["name"] = user.Name
-		claims["admin"] = false
-		claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-
-		t, err := token.SignedString([]byte(Key))
+		t, err := user.IssueToken()
 		if err != nil {
 			return err
 		}
