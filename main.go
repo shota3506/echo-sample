@@ -26,7 +26,8 @@ func main() {
 		},
 	}))
 
-	db, err := gorm.Open("mysql", os.Getenv("DATABASE_SOURCE"))
+	source := os.Getenv("DB_USER")+":"+os.Getenv("DB_PASS")+"@"+os.Getenv("DB_PROTOCOL")+"/"+os.Getenv("DB_NAME")+"?parseTime=true"
+	db, err := gorm.Open("mysql", source)
 	if err != nil {
 		panic("データベースへの接続に失敗しました")
 	}

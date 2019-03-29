@@ -5,7 +5,7 @@ RUN go get github.com/jinzhu/gorm
 RUN go get github.com/dgrijalva/jwt-go
 RUN go get github.com/go-sql-driver/mysql
 
-WORKDIR /app
-ADD . /app
+WORKDIR /go/src/app
+ADD . /go/src/app
 
 CMD ["go", "run", "main.go"]

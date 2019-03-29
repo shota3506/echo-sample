@@ -16,9 +16,12 @@ services:
     build: .
     command: go run main.go
     environment:
-      DATABASE_SOURCE: root:password@tcp(db:3306)/echo_sample?parseTime=true
+      DB_USER: root
+      DB_PASS: password
+      DB_PROTOCOL: tcp(db:3306)
+      DB_NAME: echo_sample
     volumes:
-      - .:/app
+      - .:/go/src/app
     ports:
       - 1323:1323
     depends_on:
