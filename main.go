@@ -37,7 +37,7 @@ func main() {
 	}
 	defer db.Close()
 	db.AutoMigrate(&model.User{})
-	db.AutoMigrate(&model.WorkSpace{})
+	db.AutoMigrate(&model.Team{})
 
 	h := &handler.Handler{DB: db}
 
@@ -46,8 +46,8 @@ func main() {
 	e.POST("/users", h.CreateUser())
 	e.POST("/login", h.Login())
 
-	e.GET("/work_spaces/:id", h.GetWorkSpace())
-	e.POST("/work_spaces", h.CreateWorkSpace())
+	e.GET("/teams/:id", h.GetTeam())
+	e.POST("/teams", h.CreateTeam())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

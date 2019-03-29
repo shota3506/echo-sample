@@ -13,7 +13,7 @@ type User struct {
 	Model
 	Email string `gorm:"unique_index" json:"email"`
 	Password string `json:"-"`
-	WorkSpaces []WorkSpace `gorm:"many2many:user_work_spaces;" json:"work_spaces"`
+	Teams []Team `gorm:"many2many:user_teams;" json:"teams"`
 }
 
 func (u *User) IssueToken() (string, error)  {

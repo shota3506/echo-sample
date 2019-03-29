@@ -16,7 +16,7 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userId := c.Param("id")
 		user := model.User{}
-		result := h.DB.Preload("WorkSpaces").First(&user, "id=?", userId)
+		result := h.DB.Preload("Teams").First(&user, "id=?", userId)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"status": "Not Found",

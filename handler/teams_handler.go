@@ -7,46 +7,46 @@ import (
 	"../model"
 )
 
-type WorkSpaceParam struct {
+type teamSpaceParam struct {
 	Name string
 }
 
-func (h *Handler) GetWorkSpace() echo.HandlerFunc {
+func (h *Handler) GetTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		workSpaceId := c.Param("id")
-		workSpace := model.WorkSpace{}
-		result := h.DB.Preload("Users").First(&workSpace, "id=?", workSpaceId)
+		teamId := c.Param("id")
+		team := model.Team{}
+		result := h.DB.Preload("Users").First(&team, "id=?", teamId)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"status": "Not Found",
 			})
 		}
 		return c.JSON(http.StatusOK, struct {
-			WorkSpace model.WorkSpace `json:"work_space"`
+			Team model.Team `json:"team"`
 		} {
-			WorkSpace: workSpace,
+			Team: team,
 		})
 	}
 }
 
-func (h *Handler) CreateWorkSpace() echo.HandlerFunc {
+func (h *Handler) CreateTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		param := new(WorkSpaceParam)
+		param := new(teamSpaceParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
 
-		workSpace := model.WorkSpace{
+		team := model.Team{
 			Name: param.Name,
 		}
-		h.DB.Create(&workSpace)
+		h.DB.Create(&team)
 
 		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
 		user := model.User{}
 		h.DB.First(&user, "email=?", userEmail)
-		h.DB.Model(&workSpace).Association("Users").Append(&user)
+		h.DB.Model(&team).Association("Users").Append(&user)
 		return c.JSON(http.StatusOK, echo.Map{
-			"Name": workSpace.Name,
+			"Name": team.Name,
 		})
 	}
 }
