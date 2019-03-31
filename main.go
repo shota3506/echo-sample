@@ -51,9 +51,9 @@ func main() {
 	e.GET("/teams/:id", h.GetTeam())
 	e.POST("/teams", h.CreateTeam())
 
-	e.POST("/notes/add", h.CreateNote())
-	e.POST("/notes/save/:id", h.SaveNote())
 	e.GET("/notes/:id", h.GetNote())
+	e.POST("/notes", h.CreateNote())
+	e.PUT("/notes/:id", h.UpdateNote())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

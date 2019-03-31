@@ -6,8 +6,7 @@ import (
 	"net/http"
 )
 
-type noteSpaceParam struct {
-	Id int
+type noteParam struct {
 	Title string
 	Content string
 }
@@ -32,7 +31,7 @@ func (h *Handler) GetNote() echo.HandlerFunc {
 
 func (h *Handler) CreateNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		param := new(noteSpaceParam)
+		param := new(noteParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
@@ -46,7 +45,7 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 	}
 }
 
-func (h *Handler) SaveNote() echo.HandlerFunc {
+func (h *Handler) UpdateNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		noteId := c.Param("id")
 		note := model.Note{}
@@ -58,7 +57,7 @@ func (h *Handler) SaveNote() echo.HandlerFunc {
 			})
 		}
 
-		param := new(noteSpaceParam)
+		param := new(noteParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
