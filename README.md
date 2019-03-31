@@ -8,6 +8,6 @@ echo sample application
 go get github.com/shota3506/echo_sample
 cd $GOPATH/src/github.com/shota3506/echo_sample
 docker pull golang
-docker pull mysql
+docker pull mysql:5.7
 docker-compose up
 ```
