@@ -16,10 +16,10 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userId := c.Param("id")
 		user := model.User{}
-		h.DB.Preload("Teams").First(&user, "id=?", userId)
-		if h.DB.Error != nil {
+		result := h.DB.Preload("Teams").First(&user, "id=?", userId)
+		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
+				"error": result.Error,
 			})
 		}
 		return c.JSON(http.StatusOK, struct {
@@ -40,10 +40,10 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 			Email: param.Email,
 			Password: param.Password,
 		}
-		h.DB.Create(&user)
-		if h.DB.Error != nil {
+		result := h.DB.Create(&user)
+		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
+				"error": result.Error,
 			})
 		}
 		t, err := user.IssueToken()

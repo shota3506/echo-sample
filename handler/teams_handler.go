@@ -49,10 +49,10 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 
 		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
 		user := model.User{}
-		h.DB.First(&user, "email=?", userEmail)
-		if h.DB.Error != nil {
+		result := h.DB.First(&user, "email=?", userEmail)
+		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
+				"error": result.Error,
 			})
 		}
 		member := model.Member{
@@ -61,10 +61,10 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 			Name: param.MemberName,
 			Role: "admin",
 		}
-		h.DB.Create(&member)
-		if h.DB.Error != nil {
+		result = h.DB.Create(&member)
+		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
+				"error": result.Error,
 			})
 		}
 		return c.JSON(http.StatusOK, struct {

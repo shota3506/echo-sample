@@ -18,10 +18,10 @@ func (h *Handler) Login() echo.HandlerFunc {
 			return err
 		}
 		user := model.User{}
-		h.DB.First(&user, "email=? and password=?", param.Email, param.Password)
-		if h.DB.Error != nil {
+		result := h.DB.First(&user, "email=? and password=?", param.Email, param.Password)
+		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
+				"error": result.Error,
 			})
 		}
 
