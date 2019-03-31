@@ -5,16 +5,17 @@ import (
 	"time"
 )
 
-const (
-	JWTTokenKey = "wkGRdkcF2taUE"
-)
 
 type User struct {
 	Model
 	Email string `gorm:"unique_index" json:"email"`
 	Password string `json:"-"`
-	Teams []Team `gorm:"many2many:user_teams;" json:"teams"`
+	Members []Member `json:"members"`
 }
+
+const (
+	JWTTokenKey = "wkGRdkcF2taUE"
+)
 
 func (u *User) IssueToken() (string, error)  {
 	token := jwt.New(jwt.SigningMethodHS256)

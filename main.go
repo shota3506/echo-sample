@@ -38,6 +38,7 @@ func main() {
 	}
 	defer db.Close()
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Member{})
 	db.AutoMigrate(&model.Team{})
 
 	h := &handler.Handler{DB: db}
