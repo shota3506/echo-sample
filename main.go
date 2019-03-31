@@ -49,7 +49,7 @@ func main() {
 	e.POST("/login", h.Login())
 
 	e.GET("/teams/:id", h.GetTeam())
-	//e.POST("/teams", h.CreateTeam())
+	e.POST("/teams", h.CreateTeam())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
