@@ -1,52 +1,72 @@
 package handler
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"../model"
 	"github.com/labstack/echo"
 	"net/http"
-	"../model"
 )
 
-type teamSpaceParam struct {
-	Name string
+type noteSpaceParam struct {
+	Id int
+	Title string
+	Content string
 }
 
-func (h *Handler) GetTeam() echo.HandlerFunc {
+func (h *Handler) GetNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		teamId := c.Param("id")
-		team := model.Team{}
-		result := h.DB.Preload("Users").First(&team, "id=?", teamId)
+		noteId := c.Param("id")
+		note := model.Note{}
+		result := h.DB.First(&note, "id=?", noteId)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"status": "Not Found",
 			})
 		}
 		return c.JSON(http.StatusOK, struct {
-			Team model.Team `json:"team"`
+			Note model.Note `json:"note"`
 		} {
-			Team: team,
+			Note: note,
 		})
 	}
 }
 
-func (h *Handler) CreateTeam() echo.HandlerFunc {
+func (h *Handler) CreateNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		param := new(teamSpaceParam)
+		param := new(noteSpaceParam)
+		if err := c.Bind(param); err != nil {
+			return err
+		}
+		note := model.Note{
+			Title: param.Title,
+			Content: param.Content,
+		}
+
+		h.DB.Create(&note)
+		return c.JSON(http.StatusOK, note)
+	}
+}
+
+func (h *Handler) SaveNote() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		noteId := c.Param("id")
+		note := model.Note{}
+		result := h.DB.First(&note, "id=?", noteId)
+
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"status": "Not Found",
+			})
+		}
+
+		param := new(noteSpaceParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
 
-		team := model.Team{
-			Name: param.Name,
-		}
-		h.DB.Create(&team)
+		note.Content = param.Content
+		note.Title = param.Title
+		h.DB.Save(&note)
 
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		h.DB.First(&user, "email=?", userEmail)
-		h.DB.Model(&team).Association("Users").Append(&user)
-		return c.JSON(http.StatusOK, echo.Map{
-			"Name": team.Name,
-		})
+		return  c.JSON(http.StatusOK, note)
 	}
 }
