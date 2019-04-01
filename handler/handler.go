@@ -35,7 +35,6 @@ func (h *Handler) setCurrentUser(c echo.Context) error {
 func (h *Handler) setCurrentMember(c echo.Context, teamID uint) error {
 	e := h.setCurrentUser(c)
 	if e != nil { return e }
-	currentMember := model.Member{}
-	result := h.DB.Preload("User").Preload("Team").First(&currentMember, "user_id=? AND team_id=?", h.CurrentUser.ID, teamID)
+	result := h.DB.Preload("User").Preload("Team").First(&h.CurrentMember, "user_id=? AND team_id=?", h.CurrentUser.ID, teamID)
 	return result.Error
 }

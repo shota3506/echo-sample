@@ -48,12 +48,11 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 			Folder: folder,
 		}
 
-		if err := c.Validate(note); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error":  err.Error(),
-			})
-		}
-		h.DB.Create(&note)
+		//if err := c.Validate(note); err != nil {
+		//	return c.JSON(http.StatusBadRequest, map[string]string{
+		//		"error":  err.Error(),
+		//	})
+		//}
 
 		result = h.DB.Create(&note)
 		if result.Error != nil { return h.return400(c, result.Error) }

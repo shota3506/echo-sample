@@ -71,6 +71,13 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		}
 		result = h.DB.Create(&folder)
 
+		tree_path := model.TreePath{
+			AncestorId: folder.ID,
+			DescendantId: folder.ID,
+			Length: 0,
+		}
+		h.DB.Create(&tree_path)
+
 		member := model.Member{
 			User: h.CurrentUser,
 			Name: param.MemberName,
