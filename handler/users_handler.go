@@ -44,3 +44,16 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 		})
 	}
 }
+
+func (h *Handler) GetCurrentUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
+		return c.JSON(http.StatusOK, struct {
+			User model.User `json:"user"`
+		} {
+			User: currentUser,
+		})
+	}
+}
+

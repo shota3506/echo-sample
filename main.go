@@ -49,6 +49,7 @@ func main() {
 	e.GET("/", h.Home())
 	e.GET("/users/:id", h.GetUser())
 	e.POST("/users", h.CreateUser())
+	e.GET("/users/current", h.GetCurrentUser())
 	e.POST("/login", h.Login())
 
 	e.GET("/teams", h.GetTeams())
