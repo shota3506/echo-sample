@@ -27,12 +27,17 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		teamId := c.Param("id")
 		team := model.Team{}
-		result := h.DB.Preload("Users").First(&team, "id=?", teamId)
+		result := h.DB.Preload("Members").First(&team, "id=?", teamId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
-			Team model.Team `json:"team"`
+			Team model.TeamResponse `json:"team"`
 		} {
-			Team: team,
+			Team: model.TeamResponse{
+				Model: team.Model,
+				Name: team.Name,
+				Members: team.Members,
+				RootFolder: team.GetRootFolder(h.DB),
+			},
 		})
 	}
 }
@@ -57,8 +62,8 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		}
 		
 		result := h.DB.Create(&team)
-		
-    if result.Error != nil { return h.return400(c, result.Error) }
+
+		if result.Error != nil { return h.return400(c, result.Error) }
 		folder := model.Folder{
 			Title: "root",
 			IsRoot: true,
@@ -68,7 +73,6 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 
 		member := model.Member{
 			User: currentUser,
-			Team: team,
 			Name: param.MemberName,
 			Role: "admin",
 		}
@@ -77,12 +81,17 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 				"error":  err.Error(),
 			})
 		}
-		result = h.DB.Create(&member)
+		h.DB.Model(&team).Association("Members").Append(member)
 		if result.Error != nil { return h.return400(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
-			Team model.Team `json:"team"`
+			Team model.TeamResponse `json:"team"`
 		} {
-			Team: team,
+			Team: model.TeamResponse{
+				Model: team.Model,
+				Name: team.Name,
+				Members: team.Members,
+				RootFolder: folder,
+			},
 		})
 	}
 }

@@ -16,13 +16,17 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userId := c.Param("id")
 		user := model.User{}
-
-		result := h.DB.Preload("Teams").First(&user, "id=?", userId)
+		result := h.DB.Preload("Members").Preload("Teams").First(&user, "id=?", userId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
-			User model.User `json:"user"`
+			User model.UserResponse `json:"user"`
 		} {
-			User: user,
+			User: model.UserResponse{
+				Model: user.Model,
+				Email: user.Email,
+				Members: user.Members,
+				Teams: user.Teams,
+			},
 		})
 	}
 }
@@ -56,9 +60,14 @@ func (h *Handler) GetCurrentUser() echo.HandlerFunc {
 		currentUser, e := h.getCurrentUser(c)
 		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
-			User model.User `json:"user"`
+			User model.UserResponse `json:"user"`
 		} {
-			User: currentUser,
+			User: model.UserResponse{
+				Model: currentUser.Model,
+				Email: currentUser.Email,
+				Members: currentUser.Members,
+				Teams: currentUser.Teams,
+			},
 		})
 	}
 }

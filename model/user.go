@@ -10,8 +10,15 @@ type User struct {
 	Model
 	Email string `gorm:"unique_index" json:"email" validate:"required,email"`
 	Password string `json:"-" validate:"required"`
-	Members []Member `json:"members"`
+	Members []Member `json:"-"`
 	Teams []Team `json:"-" gorm:"many2many:members;"`
+}
+
+type UserResponse struct {
+	Model
+	Email string `json:"email"`
+	Members []Member `json:"members"`
+	Teams []Team `json:"teams"`
 }
 
 const (
