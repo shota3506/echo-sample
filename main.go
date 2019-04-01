@@ -36,7 +36,7 @@ func main() {
 			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
 				return true
 			}
-			return true
+			return false
 		},
 	}))
 
@@ -46,15 +46,19 @@ func main() {
 		panic("データベースへの接続に失敗しました")
 	}
 	defer db.Close()
-	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Member{})
+	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Team{})
+	db.AutoMigrate(&model.TreePath{})
+	db.AutoMigrate(&model.Folder{})
+	db.AutoMigrate(&model.Note{})
 
 	h := &handler.Handler{DB: db}
 
 	e.GET("/", h.Home())
 	e.GET("/users/:id", h.GetUser())
 	e.POST("/users", h.CreateUser())
+	e.GET("/users/current", h.GetCurrentUser())
 	e.POST("/login", h.Login())
 
 	e.GET("/teams", h.GetTeams())

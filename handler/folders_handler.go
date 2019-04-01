@@ -16,11 +16,7 @@ func (h *Handler) GetFolder() echo.HandlerFunc {
 		folderId := c.Param("id")
 		folder := model.Folder{}
 		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, folder)
 	}
 }
@@ -29,51 +25,15 @@ func (h *Handler) GetFolders() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		folders := []model.Folder{}
 		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).Find(&folders)
-
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, folders)
-	}
-}
-
-func (h *Handler) UpdateFolder() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		folderId := c.Param("id")
-		folder := model.Folder{}
-		result := h.DB.First(&folder, "id=?", folderId)
-
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
-
-		param := new(folderParam)
-		if err := c.Bind(param); err != nil {
-			return err
-		}
-
-		folder.Title = param.Title
-		if err := c.Validate(folder); err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error":  err.Error(),
-			})
-		}
-		h.DB.Save(&folder)
-
-		return  c.JSON(http.StatusOK, folder)
 	}
 }
 
 func (h *Handler) CreateFolder() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		param := new(folderParam)
-		if err := c.Bind(param); err != nil {
-			return err
-		}
+		if err := c.Bind(param); err != nil { return h.return400(c, err) }
 		folder := model.Folder{
 			Title: param.Title,
 		}
@@ -105,5 +65,34 @@ func (h *Handler) CreateFolder() echo.HandlerFunc {
 
 
 		return c.JSON(http.StatusOK, folder)
+	}
+}
+
+func (h *Handler) UpdateFolder() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		folderId := c.Param("id")
+		folder := model.Folder{}
+		result := h.DB.First(&folder, "id=?", folderId)
+
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"status": "Not Found",
+			})
+		}
+
+		param := new(folderParam)
+		if err := c.Bind(param); err != nil {
+			return err
+		}
+
+		folder.Title = param.Title
+		if err := c.Validate(folder); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
+		h.DB.Save(&folder)
+
+		return  c.JSON(http.StatusOK, folder)
 	}
 }

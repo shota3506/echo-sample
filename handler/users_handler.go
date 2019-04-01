@@ -18,11 +18,7 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 		user := model.User{}
 
 		result := h.DB.Preload("Teams").First(&user, "id=?", userId)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": result.Error,
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
 			User model.User `json:"user"`
 		} {
@@ -47,19 +43,23 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 			})
 		}
 		result := h.DB.Create(&user)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": result.Error,
-			})
-		}
-		t, err := user.IssueToken()
-		if err != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": err,
-			})
-		}
+		if result.Error != nil { return h.return400(c, result.Error) }
+		t, _ := user.IssueToken()
 		return c.JSON(http.StatusOK, echo.Map{
 			"token": t,
 		})
 	}
 }
+
+func (h *Handler) GetCurrentUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
+		return c.JSON(http.StatusOK, struct {
+			User model.User `json:"user"`
+		} {
+			User: currentUser,
+		})
+	}
+}
+

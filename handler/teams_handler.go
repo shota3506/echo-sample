@@ -2,7 +2,6 @@ package handler
 
 import (
 	"../model"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"net/http"
 )
@@ -14,18 +13,12 @@ type teamParam struct {
 
 func (h *Handler) GetTeams() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result := h.DB.Preload("Teams").First(&user, "email=?", userEmail)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": result.Error,
-			})
-		}
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
 			Teams []model.Team `json:"teams"`
 		} {
-			Teams: user.Teams,
+			Teams: currentUser.Teams,
 		})
 	}
 }
@@ -34,12 +27,8 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		teamId := c.Param("id")
 		team := model.Team{}
-		h.DB.Preload("Users").First(&team, "id=?", teamId)
-		if h.DB.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
-			})
-		}
+		result := h.DB.Preload("Users").First(&team, "id=?", teamId)
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
 			Team model.Team `json:"team"`
 		} {
@@ -50,36 +39,35 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 
 func (h *Handler) CreateTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
+
 		param := new(teamParam)
 		if err := c.Bind(param); err != nil {
 			return err
 		}
-
 		team := model.Team{
 			Name: param.Name,
 		}
+    
 		if err := c.Validate(team); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"error":  err.Error(),
 			})
 		}
-		h.DB.Create(&team)
-		if h.DB.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
-			})
+		
+		result := h.DB.Create(&team)
+		
+    if result.Error != nil { return h.return400(c, result.Error) }
+		folder := model.Folder{
+			Title: "root",
+			IsRoot: true,
+			Team: team,
 		}
+		result = h.DB.Create(&folder)
 
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result := h.DB.First(&user, "email=?", userEmail)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": result.Error,
-			})
-		}
 		member := model.Member{
-			User: user,
+			User: currentUser,
 			Team: team,
 			Name: param.MemberName,
 			Role: "admin",
@@ -90,11 +78,7 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 			})
 		}
 		result = h.DB.Create(&member)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": result.Error,
-			})
-		}
+		if result.Error != nil { return h.return400(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
 			Team model.Team `json:"team"`
 		} {
