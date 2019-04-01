@@ -11,6 +11,7 @@ type User struct {
 	Email string `gorm:"unique_index" json:"email"`
 	Password string `json:"-"`
 	Members []Member `json:"members"`
+	Teams []Team `json:"-" gorm:"many2many:members;"`
 }
 
 const (

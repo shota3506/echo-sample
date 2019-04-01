@@ -48,6 +48,7 @@ func main() {
 	e.POST("/users", h.CreateUser())
 	e.POST("/login", h.Login())
 
+	e.GET("/teams", h.GetTeams())
 	e.GET("/teams/:id", h.GetTeam())
 	e.POST("/teams", h.CreateTeam())
 
@@ -57,6 +58,7 @@ func main() {
 
 	e.GET("/teams/:team_id/members", h.GetTeamMembers())
 	e.POST("/teams/:team_id/members", h.CreateTeamMember())
+
 
 	e.Logger.Fatal(e.Start(":1323"))
 }

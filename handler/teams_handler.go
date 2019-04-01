@@ -12,6 +12,24 @@ type teamParam struct {
 	MemberName string `json:"member_name"`
 }
 
+func (h *Handler) GetTeams() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
+		user := model.User{}
+		result := h.DB.Preload("Teams").First(&user, "email=?", userEmail)
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]error{
+				"error": result.Error,
+			})
+		}
+		return c.JSON(http.StatusOK, struct {
+			Teams []model.Team `json:"teams"`
+		} {
+			Teams: user.Teams,
+		})
+	}
+}
+
 func (h *Handler) GetTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		teamId := c.Param("id")
