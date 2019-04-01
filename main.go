@@ -36,7 +36,7 @@ func main() {
 			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
 				return true
 			}
-			return false
+			return true
 		},
 	}))
 
