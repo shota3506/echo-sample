@@ -48,10 +48,15 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		}
 		team := model.Team{
 			Name: param.Name,
-			RootFolder: model.Folder{Title: "root"},
 		}
 		result := h.DB.Create(&team)
 		if result.Error != nil { return h.return400(c, result.Error) }
+		folder := model.Folder{
+			Title: "root",
+			IsRoot: true,
+			Team: team,
+		}
+		result = h.DB.Create(&folder)
 
 		member := model.Member{
 			User: currentUser,

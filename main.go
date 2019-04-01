@@ -37,8 +37,8 @@ func main() {
 		panic("データベースへの接続に失敗しました")
 	}
 	defer db.Close()
-	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Member{})
+	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Team{})
 	db.AutoMigrate(&model.TreePath{})
 	db.AutoMigrate(&model.Folder{})
