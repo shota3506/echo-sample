@@ -27,7 +27,7 @@ func main() {
 			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
 				return true
 			}
-			return false
+			return true
 		},
 	}))
 
@@ -59,6 +59,8 @@ func main() {
 	e.GET("/teams/:team_id/members", h.GetTeamMembers())
 	e.POST("/teams/:team_id/members", h.CreateTeamMember())
 
+	e.GET("/folders", h.GetFolders())
+	e.GET("/folders/:id", h.GetFolder())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
