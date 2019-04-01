@@ -39,12 +39,12 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 		folder := model.Folder{}
 		result := h.DB.First(&folder, "id=?", param.FolderId)
 		if result.Error != nil { return h.return404(c, result.Error) }
-		currentMember, e := h.getCurrentMember(c, folder.TeamID)
+		e := h.setCurrentMember(c, folder.TeamID)
 		if e != nil { return h.return404(c, e) }
 		note := model.Note{
 			Title: param.Title,
 			Content: param.Content,
-			Member: currentMember,
+			Member: h.CurrentMember,
 			Folder: folder,
 		}
 

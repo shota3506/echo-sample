@@ -57,16 +57,16 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 
 func (h *Handler) GetCurrentUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser, e := h.getCurrentUser(c)
+		e := h.setCurrentUser(c)
 		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
 			User model.UserResponse `json:"user"`
 		} {
 			User: model.UserResponse{
-				Model: currentUser.Model,
-				Email: currentUser.Email,
-				Members: currentUser.Members,
-				Teams: currentUser.Teams,
+				Model: h.CurrentUser.Model,
+				Email: h.CurrentUser.Email,
+				Members: h.CurrentUser.Members,
+				Teams: h.CurrentUser.Teams,
 			},
 		})
 	}

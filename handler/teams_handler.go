@@ -13,12 +13,12 @@ type teamParam struct {
 
 func (h *Handler) GetTeams() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser, e := h.getCurrentUser(c)
+		e := h.setCurrentUser(c)
 		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
 			Teams []model.Team `json:"teams"`
 		} {
-			Teams: currentUser.Teams,
+			Teams: h.CurrentUser.Teams,
 		})
 	}
 }
@@ -44,7 +44,7 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 
 func (h *Handler) CreateTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser, e := h.getCurrentUser(c)
+		e := h.setCurrentUser(c)
 		if e != nil { return h.return404(c, e) }
 
 		param := new(teamParam)
@@ -72,17 +72,17 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		result = h.DB.Create(&folder)
 
 		member := model.Member{
-			User: currentUser,
+			User: h.CurrentUser,
 			Name: param.MemberName,
 			Role: "admin",
 		}
+
 		if err := c.Validate(member); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"error":  err.Error(),
 			})
 		}
 		h.DB.Model(&team).Association("Members").Append(member)
-		if result.Error != nil { return h.return400(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
 			Team model.TeamResponse `json:"team"`
 		} {

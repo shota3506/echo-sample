@@ -10,6 +10,8 @@ import (
 
 type Handler struct {
 	DB *gorm.DB
+	CurrentUser model.User
+	CurrentMember model.Member
 }
 
 func (h *Handler) return400(c echo.Context, e error) error {
@@ -24,17 +26,16 @@ func (h *Handler) return404(c echo.Context, e error) error {
 	})
 }
 
-func (h *Handler) getCurrentUser(c echo.Context) (model.User, error) {
+func (h *Handler) setCurrentUser(c echo.Context) error {
 	userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-	currentUser := model.User{}
-	result := h.DB.Preload("Members").Preload("Teams").First(&currentUser, "email=?", userEmail)
-	return currentUser, result.Error
+	result := h.DB.Preload("Members").Preload("Teams").First(&h.CurrentUser, "email=?", userEmail)
+	return result.Error
 }
 
-func (h *Handler) getCurrentMember(c echo.Context, teamID uint) (model.Member, error) {
-	currentUser, e := h.getCurrentUser(c)
-	if e != nil { return model.Member{}, e }
+func (h *Handler) setCurrentMember(c echo.Context, teamID uint) error {
+	e := h.setCurrentUser(c)
+	if e != nil { return e }
 	currentMember := model.Member{}
-	result := h.DB.Preload("User").Preload("Team").First(&currentMember, "user_id=? AND team_id=?", currentUser.ID, teamID)
-	return currentMember, result.Error
+	result := h.DB.Preload("User").Preload("Team").First(&currentMember, "user_id=? AND team_id=?", h.CurrentUser.ID, teamID)
+	return result.Error
 }
