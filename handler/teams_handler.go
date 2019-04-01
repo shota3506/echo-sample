@@ -2,7 +2,6 @@ package handler
 
 import (
 	"../model"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	"net/http"
 )
@@ -14,14 +13,12 @@ type teamParam struct {
 
 func (h *Handler) GetTeams() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result := h.DB.Preload("Teams").First(&user, "email=?", userEmail)
-		if result.Error != nil { return h.return404(c, result.Error) }
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
 			Teams []model.Team `json:"teams"`
 		} {
-			Teams: user.Teams,
+			Teams: currentUser.Teams,
 		})
 	}
 }
@@ -42,6 +39,9 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 
 func (h *Handler) CreateTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
+
 		param := new(teamParam)
 		if err := c.Bind(param); err != nil {
 			return err
@@ -52,13 +52,9 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		}
 		result := h.DB.Create(&team)
 		if result.Error != nil { return h.return400(c, result.Error) }
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result = h.DB.First(&user, "email=?", userEmail)
-		if result.Error != nil { return h.return404(c, result.Error) }
 
 		member := model.Member{
-			User: user,
+			User: currentUser,
 			Team: team,
 			Name: param.MemberName,
 			Role: "admin",

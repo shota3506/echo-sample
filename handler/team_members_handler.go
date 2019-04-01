@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	"../model"
 	"github.com/labstack/echo"
 	"net/http"
-	"../model"
 )
 
 type teamMemberParam struct {
@@ -27,6 +26,9 @@ func (h *Handler) GetTeamMembers() echo.HandlerFunc {
 
 func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		currentUser, e := h.getCurrentUser(c)
+		if e != nil { return h.return404(c, e) }
+
 		teamId := c.Param("team_id")
 		team := model.Team{}
 		result := h.DB.Preload("Members").First(&team, "id=?", teamId)
@@ -34,12 +36,9 @@ func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 
 		param := new(teamMemberParam)
 		if err := c.Bind(param); err != nil { return h.return400(c, err) }
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result = h.DB.First(&user, "email=?", userEmail)
-		if result.Error != nil { return h.return404(c, result.Error) }
+
 		member := model.Member{
-			User: user,
+			User: currentUser,
 			Team: team,
 			Name: param.Name,
 			Role: "general",
