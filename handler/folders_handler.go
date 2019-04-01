@@ -8,14 +8,14 @@ import (
 
 type folderParam struct {
 	Title string
-	ParentId int
+	ParentId int `json:"parent_id"`
 }
 
 func (h *Handler) GetFolder() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		folderId := c.Param("id")
 		folder := model.Folder{}
-		result := h.DB.Where("tree_paths.length = ?", 1).Preload("Folders").First(&folder, "id=?", folderId)
+		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
 				"status": "Not Found",
@@ -28,7 +28,7 @@ func (h *Handler) GetFolder() echo.HandlerFunc {
 func (h *Handler) GetFolders() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		folders := []model.Folder{}
-		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).Preload("Folders").Find(&folders)
+		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).Find(&folders)
 
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]string{
@@ -85,6 +85,14 @@ func (h *Handler) CreateFolder() echo.HandlerFunc {
 			}
 			h.DB.Create(&tree_path)
 		}
+
+		tree_path := model.TreePath{
+			AncestorId: folder.ID,
+			DescendantId: folder.ID,
+			Length: 0,
+		}
+		h.DB.Create(&tree_path)
+
 
 		return c.JSON(http.StatusOK, folder)
 	}
