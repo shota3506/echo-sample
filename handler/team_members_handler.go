@@ -43,6 +43,11 @@ func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 			Name: param.Name,
 			Role: "general",
 		}
+		if err := c.Validate(member); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		result = h.DB.Create(&member)
 		if result.Error != nil { return h.return400(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {

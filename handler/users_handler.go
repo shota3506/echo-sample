@@ -16,6 +16,7 @@ func (h *Handler) GetUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		userId := c.Param("id")
 		user := model.User{}
+
 		result := h.DB.Preload("Teams").First(&user, "id=?", userId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
@@ -35,6 +36,11 @@ func (h *Handler) CreateUser() echo.HandlerFunc {
 		user := model.User{
 			Email: param.Email,
 			Password: param.Password,
+		}
+		if err := c.Validate(user); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
 		}
 		result := h.DB.Create(&user)
 		if result.Error != nil { return h.return400(c, result.Error) }

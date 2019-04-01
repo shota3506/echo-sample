@@ -17,6 +17,12 @@ func (h *Handler) GetNote() echo.HandlerFunc {
 		noteId := c.Param("id")
 		note := model.Note{}
 		result := h.DB.First(&note, "id=?", noteId)
+
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"status": "Not Found",
+			})
+		}
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
 			Note model.Note `json:"note"`
@@ -38,6 +44,14 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 			Content: param.Content,
 			Folder: folder,
 		}
+
+		if err := c.Validate(note); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
+		h.DB.Create(&note)
+
 		result = h.DB.Create(&note)
 		if result.Error != nil { return h.return400(c, result.Error) }
 
@@ -61,6 +75,11 @@ func (h *Handler) UpdateNote() echo.HandlerFunc {
 
 		note.Content = param.Content
 		note.Title = param.Title
+		if err := c.Validate(note); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		h.DB.Save(&note)
 
 		return c.JSON(http.StatusOK, struct {

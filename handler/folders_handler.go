@@ -37,6 +37,11 @@ func (h *Handler) CreateFolder() echo.HandlerFunc {
 		folder := model.Folder{
 			Title: param.Title,
 		}
+		if err := c.Validate(folder); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		h.DB.Create(&folder)
 
 		parent_tree_paths := []model.TreePath{}
@@ -68,11 +73,24 @@ func (h *Handler) UpdateFolder() echo.HandlerFunc {
 		folderId := c.Param("id")
 		folder := model.Folder{}
 		result := h.DB.First(&folder, "id=?", folderId)
-		if result.Error != nil { return h.return404(c, result.Error) }
+
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"status": "Not Found",
+			})
+		}
 
 		param := new(folderParam)
-		if err := c.Bind(param); err != nil { return h.return400(c, err) }
+		if err := c.Bind(param); err != nil {
+			return err
+		}
+
 		folder.Title = param.Title
+		if err := c.Validate(folder); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		h.DB.Save(&folder)
 
 		return  c.JSON(http.StatusOK, folder)

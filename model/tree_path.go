@@ -4,10 +4,10 @@ import "github.com/jinzhu/gorm"
 
 type TreePath struct {
 	gorm.Model
+  AncestorId uint `json:"ancestor_id" validate:"required"`
 	Ancestor Folder
-	AncestorId uint `json:"ancestor_id"`
+	DescendantId uint `json:"descendant_id" validate:"required"`
 	Descendant Folder
-	DescendantId uint `json:"descendant_id"`
-	Length int `json:"length"`
+	Length int `json:"length" validate:"required"`
 }
 
