@@ -61,6 +61,8 @@ func main() {
 
 	e.GET("/folders", h.GetFolders())
 	e.GET("/folders/:id", h.GetFolder())
+	e.PUT("/folders/:id", h.UpdateFolder())
+	e.POST("/folders", h.CreateFolder())
 
 	e.Logger.Fatal(e.Start(":1323"))
 }
