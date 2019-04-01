@@ -23,7 +23,11 @@ func (h *Handler) GetFolder() echo.HandlerFunc {
 			Preload("Folders.Folders.Notes").
 			First(&folder, "id=?", folderId)
 		if result.Error != nil { return h.return404(c, result.Error) }
-		return c.JSON(http.StatusOK, folder)
+		return c.JSON(http.StatusOK, struct {
+			Folder model.Folder `json:"folder"`
+		} {
+			Folder: folder,
+		})
 	}
 }
 
@@ -72,8 +76,11 @@ func (h *Handler) CreateFolder() echo.HandlerFunc {
 		}
 		h.DB.Create(&tree_path)
 
-
-		return c.JSON(http.StatusOK, folder)
+		return c.JSON(http.StatusOK, struct {
+			Folder model.Folder `json:"folder"`
+		} {
+			Folder: folder,
+		})
 	}
 }
 
@@ -102,6 +109,10 @@ func (h *Handler) UpdateFolder() echo.HandlerFunc {
 		}
 		h.DB.Save(&folder)
 
-		return  c.JSON(http.StatusOK, folder)
+		return c.JSON(http.StatusOK, struct {
+			Folder model.Folder `json:"folder"`
+		} {
+			Folder: folder,
+		})
 	}
 }
