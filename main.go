@@ -27,7 +27,7 @@ func main() {
 			if c.Path() == "/" || c.Path() == "/login" || c.Path() == "/users" {
 				return true
 			}
-			return true
+			return false
 		},
 	}))
 
@@ -40,6 +40,9 @@ func main() {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Member{})
 	db.AutoMigrate(&model.Team{})
+	db.AutoMigrate(&model.TreePath{})
+	db.AutoMigrate(&model.Folder{})
+	db.AutoMigrate(&model.Note{})
 
 	h := &handler.Handler{DB: db}
 

@@ -55,24 +55,27 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 			return err
 		}
 
+		//rootFolder := model.Folder{Title: "root"}
+		//h.DB.Create(&rootFolder)
 		team := model.Team{
 			Name: param.Name,
+			RootFolder: model.Folder{Title: "root"},
 		}
-		h.DB.Create(&team)
-		if h.DB.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]error{
-				"error": h.DB.Error,
-			})
-		}
-
-		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-		user := model.User{}
-		result := h.DB.First(&user, "email=?", userEmail)
+		result := h.DB.Create(&team)
 		if result.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
 				"error": result.Error,
 			})
 		}
+		userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
+		user := model.User{}
+		result = h.DB.First(&user, "email=?", userEmail)
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]error{
+				"error": result.Error,
+			})
+		}
+
 		member := model.Member{
 			User: user,
 			Team: team,
