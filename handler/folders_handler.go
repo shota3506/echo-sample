@@ -15,8 +15,11 @@ func (h *Handler) GetFolder() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		folderId := c.Param("id")
 		folder := model.Folder{}
+		h.DB.Preload("Notes").First(&folder, "id=?", folderId)
 		h.DB.Preload("Folders", "tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
-		result := h.DB.Preload("Folders.Folders", "tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
+		h.DB.Preload("Folders.Notes").First(&folder, "id=?", folderId)
+		h.DB.Preload("Folders.Folders", "tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
+		result := h.DB.Preload("Folders.Folders.Notes").First(&folder, "id=?", folderId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, folder)
 	}

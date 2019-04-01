@@ -6,6 +6,7 @@ type Folder struct {
 	Title string `json:"title" validate:"required,min=1"`
 	Team Team `json:"-"`
 	TeamID uint `json:"team_id"`
+	Notes []Note `json:"notes"`
 	IsRoot bool `json:"is_root" gorm:"not null;default:false"`
-	Folders []*Folder `gorm:"many2many:tree_paths;association_jointable_foreignkey:descendant_id;jointable_foreignkey:ancestor_id" json:"-"`
+	Folders []*Folder `gorm:"many2many:tree_paths;association_jointable_foreignkey:descendant_id;jointable_foreignkey:ancestor_id" json:"folders,omitempty"`
 }
