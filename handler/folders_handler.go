@@ -16,11 +16,7 @@ func (h *Handler) GetFolder() echo.HandlerFunc {
 		folderId := c.Param("id")
 		folder := model.Folder{}
 		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).First(&folder, "id=?", folderId)
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, folder)
 	}
 }
@@ -29,12 +25,7 @@ func (h *Handler) GetFolders() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		folders := []model.Folder{}
 		result := h.DB.Preload("Folders","tree_paths.length = ?", 1).Find(&folders)
-
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, folders)
 	}
 }
@@ -44,18 +35,10 @@ func (h *Handler) UpdateFolder() echo.HandlerFunc {
 		folderId := c.Param("id")
 		folder := model.Folder{}
 		result := h.DB.First(&folder, "id=?", folderId)
-
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		if result.Error != nil { return h.return404(c, result.Error) }
 
 		param := new(folderParam)
-		if err := c.Bind(param); err != nil {
-			return err
-		}
-
+		if err := c.Bind(param); err != nil { return h.return400(c, err) }
 		folder.Title = param.Title
 		h.DB.Save(&folder)
 
