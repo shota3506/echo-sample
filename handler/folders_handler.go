@@ -57,6 +57,11 @@ func (h *Handler) UpdateFolder() echo.HandlerFunc {
 		}
 
 		folder.Title = param.Title
+		if err := c.Validate(folder); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		h.DB.Save(&folder)
 
 		return  c.JSON(http.StatusOK, folder)
@@ -71,6 +76,11 @@ func (h *Handler) CreateFolder() echo.HandlerFunc {
 		}
 		folder := model.Folder{
 			Title: param.Title,
+		}
+		if err := c.Validate(folder); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
 		}
 		h.DB.Create(&folder)
 

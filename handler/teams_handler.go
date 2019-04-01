@@ -58,6 +58,11 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		team := model.Team{
 			Name: param.Name,
 		}
+		if err := c.Validate(team); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
+		}
 		h.DB.Create(&team)
 		if h.DB.Error != nil {
 			return c.JSON(http.StatusNotFound, map[string]error{
@@ -78,6 +83,11 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 			Team: team,
 			Name: param.MemberName,
 			Role: "admin",
+		}
+		if err := c.Validate(member); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error":  err.Error(),
+			})
 		}
 		result = h.DB.Create(&member)
 		if result.Error != nil {

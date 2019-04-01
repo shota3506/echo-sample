@@ -8,8 +8,8 @@ import (
 
 type User struct {
 	Model
-	Email string `gorm:"unique_index" json:"email"`
-	Password string `json:"-"`
+	Email string `gorm:"unique_index" json:"email" validate:"required,email"`
+	Password string `json:"-" validate:"required"`
 	Members []Member `json:"members"`
 	Teams []Team `json:"-" gorm:"many2many:members;"`
 }

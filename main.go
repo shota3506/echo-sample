@@ -1,19 +1,28 @@
 package main
 
 import (
-	"net/http"
-	"os"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"./handler"
 	"./model"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"github.com/labstack/echo"
+	"github.com/labstack/echo/middleware"
+	"gopkg.in/go-playground/validator.v9"
+	"net/http"
+	"os"
 )
+
+type Validator struct {
+	validator *validator.Validate
+}
+
+func (v *Validator) Validate(i interface{}) error {
+	return v.validator.Struct(i)
+}
 
 func main() {
 	e := echo.New()
-
+	e.Validator = &Validator{validator: validator.New()}
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
