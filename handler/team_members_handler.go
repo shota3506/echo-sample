@@ -26,7 +26,7 @@ func (h *Handler) GetTeamMembers() echo.HandlerFunc {
 
 func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		currentUser, e := h.getCurrentUser(c)
+		e := h.setCurrentUser(c)
 		if e != nil { return h.return404(c, e) }
 
 		teamId := c.Param("team_id")
@@ -38,7 +38,7 @@ func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 		if err := c.Bind(param); err != nil { return h.return400(c, err) }
 
 		member := model.Member{
-			User: currentUser,
+			User: h.CurrentUser,
 			Team: team,
 			Name: param.Name,
 			Role: "general",
@@ -51,9 +51,15 @@ func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 		result = h.DB.Create(&member)
 		if result.Error != nil { return h.return400(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
-			Member model.Member `json:"member"`
+			Member model.MemberResponse `json:"member"`
 		} {
-			Member: member,
+			Member: model.MemberResponse{
+				Model: member.Model,
+				User: member.User,
+				Team: member.Team,
+				Name: member.Name,
+				Role: member.Role,
+			},
 		})
 	}
 }
