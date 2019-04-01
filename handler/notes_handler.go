@@ -9,6 +9,7 @@ import (
 type noteParam struct {
 	Title string
 	Content string
+	FolderId int `json:"folder_id"`
 }
 
 func (h *Handler) GetNote() echo.HandlerFunc {
@@ -17,8 +18,8 @@ func (h *Handler) GetNote() echo.HandlerFunc {
 		note := model.Note{}
 		result := h.DB.First(&note, "id=?", noteId)
 		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
+			return c.JSON(http.StatusNotFound, map[string]error{
+				"error": result.Error,
 			})
 		}
 		return c.JSON(http.StatusOK, struct {
@@ -35,12 +36,24 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 		if err := c.Bind(param); err != nil {
 			return err
 		}
+		folder := model.Folder{}
+		result := h.DB.First(&folder, "id=?", param.FolderId)
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]error{
+				"error": result.Error,
+			})
+		}
 		note := model.Note{
 			Title: param.Title,
 			Content: param.Content,
+			Folder: folder,
 		}
-
-		h.DB.Create(&note)
+		result = h.DB.Create(&note)
+		if result.Error != nil {
+			return c.JSON(http.StatusNotFound, map[string]error{
+				"error": result.Error,
+			})
+		}
 
 		return c.JSON(http.StatusOK, struct {
 			Note model.Note `json:"note"`
