@@ -4,9 +4,9 @@ import _ "gopkg.in/go-playground/validator.v9"
 type Member struct {
 	Model
 	User User `json:"-"`
-	UserID int `json:"user_id" validate:"required"`
+	UserID uint `json:"user_id"`
 	Team Team `json:"-"`
-	TeamID int `json:"team_id"  validate:"required"`
+	TeamID uint `json:"team_id"`
 	Name string `json:"name" validate:"required,min=1"`
 	Role string `json:"role" validate:"required"`
 }
