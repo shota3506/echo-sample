@@ -75,6 +75,7 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 			User: h.CurrentUser,
 			Name: param.MemberName,
 			Role: "admin",
+			Team: team,
 		}
 
 		if err := c.Validate(member); err != nil {
