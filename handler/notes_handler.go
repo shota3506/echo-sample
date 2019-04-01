@@ -16,18 +16,18 @@ func (h *Handler) GetNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		noteId := c.Param("id")
 		note := model.Note{}
-		result := h.DB.First(&note, "id=?", noteId)
-
-		if result.Error != nil {
-			return c.JSON(http.StatusNotFound, map[string]string{
-				"status": "Not Found",
-			})
-		}
+		result := h.DB.Preload("Folder").Preload("Member").First(&note, "id=?", noteId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 		return c.JSON(http.StatusOK, struct {
-			Note model.Note `json:"note"`
+			Note model.NoteResponse `json:"note"`
 		} {
-			Note: note,
+			Note: model.NoteResponse{
+				Model: note.Model,
+				Folder: note.Folder,
+				Member: note.Member,
+				Title: note.Title,
+				Content: note.Content,
+			},
 		})
 	}
 }
@@ -39,9 +39,12 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 		folder := model.Folder{}
 		result := h.DB.First(&folder, "id=?", param.FolderId)
 		if result.Error != nil { return h.return404(c, result.Error) }
+		currentMember, e := h.getCurrentMember(c, folder.TeamID)
+		if e != nil { return h.return404(c, e) }
 		note := model.Note{
 			Title: param.Title,
 			Content: param.Content,
+			Member: currentMember,
 			Folder: folder,
 		}
 
@@ -56,9 +59,15 @@ func (h *Handler) CreateNote() echo.HandlerFunc {
 		if result.Error != nil { return h.return400(c, result.Error) }
 
 		return c.JSON(http.StatusOK, struct {
-			Note model.Note `json:"note"`
+			Note model.NoteResponse `json:"note"`
 		} {
-			Note: note,
+			Note: model.NoteResponse{
+				Model: note.Model,
+				Folder: note.Folder,
+				Member: note.Member,
+				Title: note.Title,
+				Content: note.Content,
+			},
 		})
 	}
 }
@@ -67,7 +76,7 @@ func (h *Handler) UpdateNote() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		noteId := c.Param("id")
 		note := model.Note{}
-		result := h.DB.First(&note, "id=?", noteId)
+		result := h.DB.Preload("Folder").Preload("Member").First(&note, "id=?", noteId)
 		if result.Error != nil { return h.return404(c, result.Error) }
 
 		param := new(noteParam)
@@ -83,9 +92,15 @@ func (h *Handler) UpdateNote() echo.HandlerFunc {
 		h.DB.Save(&note)
 
 		return c.JSON(http.StatusOK, struct {
-			Note model.Note `json:"note"`
+			Note model.NoteResponse `json:"note"`
 		} {
-			Note: note,
+			Note: model.NoteResponse{
+				Model: note.Model,
+				Folder: note.Folder,
+				Member: note.Member,
+				Title: note.Title,
+				Content: note.Content,
+			},
 		})
 	}
 }

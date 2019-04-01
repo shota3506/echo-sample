@@ -11,3 +11,11 @@ type Member struct {
 	Role string `json:"role" validate:"required"`
 }
 
+type MemberResponse struct {
+	Model
+	User User `json:"user"`
+	Team Team `json:"team"`
+	Name string `json:"name"`
+	Role string `json:"role"`
+}
+
