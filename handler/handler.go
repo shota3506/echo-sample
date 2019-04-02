@@ -10,8 +10,6 @@ import (
 
 type Handler struct {
 	DB *gorm.DB
-	CurrentUser model.User
-	CurrentMember model.Member
 }
 
 func (h *Handler) return400(c echo.Context, e error) error {
@@ -26,15 +24,16 @@ func (h *Handler) return404(c echo.Context, e error) error {
 	})
 }
 
-func (h *Handler) setCurrentUser(c echo.Context) error {
+func (h *Handler) setCurrentUser(u *model.User, c echo.Context) error {
 	userEmail := c.Get("user").(*jwt.Token).Claims.(jwt.MapClaims)["email"].(string)
-	result := h.DB.Preload("Members").Preload("Teams").First(&h.CurrentUser, "email=?", userEmail)
+	result := h.DB.Preload("Members").Preload("Teams").First(&u, "email=?", userEmail)
 	return result.Error
 }
 
-func (h *Handler) setCurrentMember(c echo.Context, teamID uint) error {
-	e := h.setCurrentUser(c)
+func (h *Handler) setCurrentMember(m *model.Member, c echo.Context, teamID uint) error {
+	currentUser := model.User{}
+	e := h.setCurrentUser(&currentUser, c)
 	if e != nil { return e }
-	result := h.DB.Preload("User").Preload("Team").First(&h.CurrentMember, "user_id=? AND team_id=?", h.CurrentUser.ID, teamID)
+	result := h.DB.Preload("User").Preload("Team").First(&m, "user_id=? AND team_id=?", currentUser.ID, teamID)
 	return result.Error
 }

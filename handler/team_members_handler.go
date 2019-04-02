@@ -26,7 +26,8 @@ func (h *Handler) GetTeamMembers() echo.HandlerFunc {
 
 func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		e := h.setCurrentUser(c)
+		currentUser := model.User{}
+		e := h.setCurrentUser(&currentUser, c)
 		if e != nil { return h.return404(c, e) }
 
 		teamId := c.Param("team_id")
@@ -38,7 +39,7 @@ func (h *Handler) CreateTeamMember() echo.HandlerFunc {
 		if err := c.Bind(param); err != nil { return h.return400(c, err) }
 
 		member := model.Member{
-			User: h.CurrentUser,
+			User: currentUser,
 			Team: team,
 			Name: param.Name,
 			Role: "general",

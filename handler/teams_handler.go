@@ -13,12 +13,13 @@ type teamParam struct {
 
 func (h *Handler) GetTeams() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		e := h.setCurrentUser(c)
+		currentUser := model.User{}
+		e := h.setCurrentUser(&currentUser, c)
 		if e != nil { return h.return404(c, e) }
 		return c.JSON(http.StatusOK, struct {
 			Teams []model.Team `json:"teams"`
 		} {
-			Teams: h.CurrentUser.Teams,
+			Teams: currentUser.Teams,
 		})
 	}
 }
@@ -44,7 +45,8 @@ func (h *Handler) GetTeam() echo.HandlerFunc {
 
 func (h *Handler) CreateTeam() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		e := h.setCurrentUser(c)
+		currentUser := model.User{}
+		e := h.setCurrentUser(&currentUser, c)
 		if e != nil { return h.return404(c, e) }
 
 		param := new(teamParam)
@@ -54,7 +56,7 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		team := model.Team{
 			Name: param.Name,
 		}
-    
+
 		if err := c.Validate(team); err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{
 				"error":  err.Error(),
@@ -79,7 +81,7 @@ func (h *Handler) CreateTeam() echo.HandlerFunc {
 		h.DB.Create(&tree_path)
 
 		member := model.Member{
-			User: h.CurrentUser,
+			User: currentUser,
 			Name: param.MemberName,
 			Role: "admin",
 			Team: team,
